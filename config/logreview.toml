@@ -1,0 +1,15 @@
+# This is a TOML document.
+# Config file for logreview-rs
+
+# The web server log files to process.
+filenames = [
+  "test1.log",
+  "test2.log",
+  "test3.log"
+]
+
+# The number of top frequencies to display
+number_of_frequencies = 10
+
+# Column index to analyze (0-based)
+column_index = 0

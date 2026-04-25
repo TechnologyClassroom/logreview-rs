@@ -26,8 +26,8 @@ use toml;
 #[derive(Deserialize)]
 struct LogConfig {
   filenames: Vec<String>,
-  number_of_frequencies: u32,
-  column_index: u32,
+  number_of_frequencies: usize,
+  column_index: usize,
 }
 
 // Temporariliy hardcoded config file location.
@@ -40,13 +40,7 @@ fn load_config(filename: &str) -> Result<LogConfig, Box<dyn std::error::Error>> 
   Ok(config)
 }
 
-fn display_results(config: LogConfig) {
-  println!("Filenames: {:?}", config.filenames);
-  println!("Number of frequencies: {}", config.number_of_frequencies);
-  println!("Column index: {}", config.column_index);
-}
-
-fn top_n_frequent_entries<P>(filename: P, n: usize) -> io::Result<Vec<(String, usize)>>
+fn top_n_frequent_entries<P>(filename: P, q: usize, c: usize) -> io::Result<Vec<(String, usize)>>
 where
   P: AsRef<Path>,
 {
@@ -59,7 +53,7 @@ where
     let line = line?;
     // Split the line by whitespace and collect the first column
     if let Some(first_column) = line.split_whitespace().next() {
-      *frequency_map.entry(first_column.to_string()).or_insert(0) += 1;
+      *frequency_map.entry(first_column.to_string()).or_insert(c) += 1;
     }
   }
 
@@ -68,7 +62,7 @@ where
   entries.sort_by(|a, b| b.1.cmp(&a.1)); // Sort in descending order by frequency
 
   // Return only the top N entries
-  Ok(entries.into_iter().take(n).collect())
+  Ok(entries.into_iter().take(q).collect())
 }
 
 fn timeisthemaster() {
@@ -87,18 +81,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   println!("\nConfig file loaded successfully!");
 
-  // Display results
-  display_results(config);
+  // Move the variables out of config so they can be copied/cloned as needed.
+  let f = config.filenames;
+  let q = config.number_of_frequencies;
+  let c = config.column_index;
 
-  // Set the log to scan.
-  let filename = "log/test1.log";
+  // Print config.
+  println!("Filenames: {:?}", f);
+  println!("Number of frequencies: {}", q);
+  println!("Column index: {}", c);
 
+  // Temporarily manually set the log to scan.
+  //let filename = "log/test1.log";
   // Parse IPs.
-  let top_entries = top_n_frequent_entries(filename, 10)?;
+  //let top_entries = top_n_frequent_entries(filename, q, c)?;
 
-  println!("\nTop 10 most frequent entries in the first column:");
-  for (entry, count) in top_entries {
-    println!("{}: {}", count, entry);
+  for file in f {
+    // Parse IPs.
+    let e = file.clone();
+    let top_entries = top_n_frequent_entries(file, q, c)?;
+
+    let d = c + 1;
+    println!("\nTop {} most frequent IP addresses in column {} of {}:", q, d, e);
+    for (entry, count) in top_entries {
+      println!("{}: {}", count, entry);
+    }
   }
 
   timeisthemaster();

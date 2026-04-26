@@ -1,5 +1,5 @@
 # logreview-rs
-logreview-rs is a work-in-progress (WIP) Rust program that is useful for reviewing logs from popular web servers.
+logreview-rs is a work-in-progress (WIP) Rust program that will be one day useful for reviewing logs from popular web servers.
 
 For a working version of this program, try the [LogReview](https://github.com/TechnologyClassroom/LogReview) project or the other few that are recommended in that README.
 
@@ -28,6 +28,14 @@ Change to the logreview-rs directory.
 Build dependencies and `logreview-rs` binary.
 
     cargo build
+
+Create a `log` directory or change the configuration file to point to your web server log.
+
+    mkdir -p log
+
+Place a web server log in the `log` directory. This is a potential example of how to copy a log file from NGINX, but you may have to adjust or use `scp` to pull from a server.
+
+    cp /var/log/nginx/access.log log/
 
 Run the program.
 

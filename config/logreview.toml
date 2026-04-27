@@ -4,8 +4,7 @@
 # The web server log files to process.
 filenames = [
   "log/test1.log",
-  "log/test2.log",
-  "log/test3.log"
+  "log/test2.log"
 ]
 
 # The number of top frequencies to display

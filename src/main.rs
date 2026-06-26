@@ -21,7 +21,6 @@ use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
-use toml;
 
 #[derive(Deserialize)]
 struct LogConfig {
@@ -30,7 +29,7 @@ struct LogConfig {
   column_index: usize,
 }
 
-// Temporariliy hardcoded config file location.
+// Temporarily hardcoded config file location.
 const CONFIG_FILE_PATH: &str = "config/logreview.toml";
 
 fn load_config(filename: &str) -> Result<LogConfig, Box<dyn std::error::Error>> {
@@ -51,9 +50,9 @@ where
 
   for line in reader.lines() {
     let line = line?;
-    // Split the line by whitespace and collect the first column
-    if let Some(first_column) = line.split_whitespace().next() {
-      *frequency_map.entry(first_column.to_string()).or_insert(c) += 1;
+    // Select the configured column (0-based) and tally it.
+    if let Some(column) = line.split_whitespace().nth(c) {
+      *frequency_map.entry(column.to_string()).or_insert(0) += 1;
     }
   }
 
@@ -96,13 +95,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   // Parse IPs.
   //let top_entries = top_n_frequent_entries(filename, q, c)?;
 
-  for file in f {
-    // Parse IPs.
-    let e = file.clone();
-    let top_entries = top_n_frequent_entries(file, q, c)?;
+  for file in &f {
+    // Parse the configured column; skip files we cannot read.
+    let top_entries = match top_n_frequent_entries(file, q, c) {
+      Ok(entries) => entries,
+      Err(err) => {
+        eprintln!("warning: skipping {}: {}", file, err);
+        continue;
+      }
+    };
 
     let d = c + 1;
-    println!("\nTop {} most frequent IP addresses in column {} of {}:", q, d, e);
+    println!("\nTop {} most frequent IP addresses in column {} of {}:", q, d, file);
     for (entry, count) in top_entries {
       println!("{}: {}", count, entry);
     }
